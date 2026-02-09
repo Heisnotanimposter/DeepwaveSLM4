@@ -1,10 +1,10 @@
-package com.example.deepwaveslm.ui
+package com.example.deepwaveslm
 
 import android.os.Bundle
 import android.util.Log
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.example.deepwaveslm.TFLiteModel
-import java.io.IOException
 
 class MainActivity : AppCompatActivity() {
 
@@ -15,20 +15,40 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        val statusView = findViewById<TextView>(R.id.statusText)
+
         try {
-            tfliteModel1 = TFLiteModel(this, "model1.tflite")
-            tfliteModel2 = TFLiteModel(this, "model2.tflite")
-
-            val input1 = floatArrayOf(1.0f, 2.0f) // Example input for model1
-            val output1 = tfliteModel1!!.predict(input1)
-            Log.d("TFLiteOutput1", "Prediction from model1: ${output1[0]}")
-
-            val input2 = floatArrayOf(3.0f, 4.0f) // Example input for model2
-            val output2 = tfliteModel2!!.predict(input2)
-            Log.d("TFLiteOutput2", "Prediction from model2: ${output2[0]}")
-
-        } catch (e: IOException) {
-            e.printStackTrace()
+            // Try loading model1 first, then model2 (graceful when assets are missing)
+            tfliteModel1 = try {
+                TFLiteModel(this, "model1.tflite")
+            } catch (_: IOException) {
+                null
+            }
+            if (tfliteModel1 != null) {
+                val input1 = floatArrayOf(1.0f, 2.0f)
+                val output1 = tfliteModel1!!.predict(input1)
+                Log.d("TFLiteOutput1", "Prediction from model1: ${output1[0]}")
+                statusView.text = getString(R.string.model_loaded, "model1", output1[0].toString())
+            } else {
+                tfliteModel2 = try {
+                    TFLiteModel(this, "model2.tflite")
+                } catch (_: IOException) {
+                    null
+                }
+                if (tfliteModel2 != null) {
+                    val input2 = floatArrayOf(3.0f, 4.0f)
+                    val output2 = tfliteModel2!!.predict(input2)
+                    Log.d("TFLiteOutput2", "Prediction from model2: ${output2[0]}")
+                    statusView.text = getString(R.string.model_loaded, "model2", output2[0].toString())
+                } else {
+                    statusView.text = getString(R.string.no_models_hint)
+                    Toast.makeText(this, R.string.no_models_hint, Toast.LENGTH_LONG).show()
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("MainActivity", "TFLite error", e)
+            statusView.text = getString(R.string.model_error, e.message ?: "")
+            Toast.makeText(this, R.string.model_error_toast, Toast.LENGTH_LONG).show()
         }
     }
 

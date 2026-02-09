@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">DeepwaveSLM</string>
+    <string name="no_models_hint">Add model1.tflite or model2.tflite to app/src/main/assets/ to run on-device inference.</string>
+    <string name="model_loaded">%1$s prediction: %2$s</string>
+    <string name="model_error">Error: %1$s</string>
+    <string name="model_error_toast">Failed to run TFLite model. Check Logcat for details.</string>
 </resources>
