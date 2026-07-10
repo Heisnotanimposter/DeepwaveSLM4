@@ -1,0 +1,2 @@
+# Place model1.tflite and/or model2.tflite here for on-device inference.
+# The app will run without models and show a hint if this folder is empty.
